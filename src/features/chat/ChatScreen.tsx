@@ -1,0 +1,203 @@
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  ListRenderItem,
+  ActivityIndicator,
+} from 'react-native';
+
+import clsx from 'clsx';
+import { useFocusEffect } from '@react-navigation/native';
+import { useChat, Message } from './hooks/useChat';
+import { KeyboardAvoidView } from '../../components';
+import { shadows } from '../../styles';
+
+export default function ChatScreen() {
+  const {
+    messages,
+    connectionState,
+    inputText,
+    setInputText,
+    connectWebSocket,
+    disconnectWebSocket,
+    sendMessage,
+  } = useChat();
+
+  const isConnected = connectionState.status === 'connected';
+  const isConnecting = connectionState.status === 'connecting';
+
+  const flatListRef = useRef<FlatList>(null);
+
+  const chatData = useMemo(() => {
+    const data: (Message | 'connecting')[] = [...messages];
+    if (isConnecting) {
+      data.push('connecting');
+    }
+    return data;
+  }, [messages, isConnecting]);
+
+  useEffect(() => {
+    // Auto-scroll
+    if (chatData.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [chatData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      connectWebSocket();
+      return () => {
+        disconnectWebSocket();
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
+
+  const renderMessage: ListRenderItem<Message | 'connecting'> = useCallback(
+    ({ item }) => {
+      if (item === 'connecting') {
+        return (
+          <View className="mb-3 items-center">
+            <View className="bg-white dark:bg-gray-800 px-4 py-3 rounded-full flex-row items-center">
+              <ActivityIndicator size="small" color="#6b7280" />
+              <Text className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                Connecting to chat server...
+              </Text>
+            </View>
+          </View>
+        );
+      }
+
+      const message = item as Message;
+
+      if (message.type === 'system') {
+        return (
+          <View className="mb-3 items-center">
+            <View className="bg-gray-200 dark:bg-gray-700 px-3 py-2 rounded-full">
+              <Text className="text-sm text-gray-600 dark:text-gray-300 text-center">
+                {message.text}
+              </Text>
+              <Text className="text-xs text-gray-400 dark:text-gray-500 text-center mt-1">
+                {message.timestamp.toLocaleTimeString()}
+              </Text>
+            </View>
+          </View>
+        );
+      }
+
+      return (
+        <View
+          className={clsx(
+            'mb-3',
+            message.type === 'sent' ? 'items-end' : 'items-start',
+          )}
+        >
+          <View
+            className={clsx(
+              'max-w-[80%] px-3 py-2 rounded-2xl',
+              message.type === 'sent'
+                ? 'bg-blue-500 rounded-br-sm'
+                : 'bg-white dark:bg-gray-800 rounded-bl-sm',
+            )}
+            // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
+            style={message.type === 'sent' ? undefined : shadows.card}
+          >
+            <Text
+              className={clsx(
+                'text-base leading-5',
+                message.type === 'sent'
+                  ? 'text-white'
+                  : 'text-gray-800 dark:text-gray-200',
+              )}
+            >
+              {message.text}
+            </Text>
+            <Text
+              className={clsx(
+                'text-xs mt-1',
+                message.type === 'sent'
+                  ? ''
+                  : 'text-gray-400 dark:text-gray-500',
+              )}
+              // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
+              /* eslint-disable react-native/no-inline-styles */
+              style={
+                message.type === 'sent'
+                  ? { color: 'rgba(255, 255, 255, 0.7)' }
+                  : undefined
+              }
+              /* eslint-enable react-native/no-inline-styles */
+            >
+              {message.timestamp.toLocaleTimeString()}
+            </Text>
+          </View>
+        </View>
+      );
+    },
+    [],
+  );
+
+  const keyExtractor = useCallback((item: Message | 'connecting') => {
+    return item === 'connecting' ? 'connecting' : item.id;
+  }, []);
+
+  return (
+    <KeyboardAvoidView className="flex-1 bg-gray-100 dark:bg-gray-900">
+      <FlatList
+        ref={flatListRef}
+        data={chatData}
+        renderItem={renderMessage}
+        keyExtractor={keyExtractor}
+        className="flex-1 px-4"
+        contentContainerClassName="py-4"
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={5}
+        windowSize={15}
+        initialNumToRender={10}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={undefined}
+        inverted={false}
+      />
+
+      <View className="flex-row p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 items-end">
+        <TextInput
+          className="flex-1 border border-gray-200 dark:border-gray-600 rounded-3xl px-4 py-2.5 max-h-[100px] text-base text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700"
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="Type a message..."
+          placeholderTextColor="#999"
+          multiline
+          maxLength={500}
+          editable={isConnected}
+        />
+        <TouchableOpacity
+          className={clsx(
+            'px-4 py-2.5 rounded-3xl ml-2 items-center justify-center',
+            isConnected && inputText.trim()
+              ? 'bg-green-500'
+              : 'bg-gray-300 dark:bg-gray-600',
+          )}
+          onPress={sendMessage}
+          disabled={!inputText.trim() || !isConnected}
+        >
+          <Text
+            className={clsx(
+              'text-base font-semibold',
+              isConnected && inputText.trim()
+                ? 'text-white'
+                : 'text-gray-500 dark:text-gray-400',
+            )}
+          >
+            {!isConnected ? 'Offline' : 'Send'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidView>
+  );
+}

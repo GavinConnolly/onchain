@@ -53,7 +53,7 @@ export default class ErrorBoundary extends Component<
   render() {
     if (this.state.hasError && this.state.error) {
       return (
-        <View className="flex-1 justify-center items-center p-6 bg-gray-100 dark:bg-gray-900">
+        <View className="flex-1 justify-center items-center p-6 bg-kraken-light dark:bg-kraken-dark">
           <View
             className="bg-white dark:bg-gray-800 p-6 rounded-3xl w-full max-w-sm"
             // Inline style used as a temporary workaround to known Nativewind issues, eg #1557

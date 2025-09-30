@@ -41,6 +41,7 @@ export function useChat(): UseChatReturn {
   const wsRef = useRef<WebSocket | null>(null);
   const wasConnectedRef = useRef(false);
   const isMountedRef = useRef(true);
+  const sendingRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -48,24 +49,26 @@ export function useChat(): UseChatReturn {
     };
   }, []);
 
-  const addMessage = useCallback((text: string, type: 'sent' | 'received' | 'system') => {
-    if (!isMountedRef.current) return;
+  const addMessage = useCallback(
+    (text: string, type: 'sent' | 'received' | 'system') => {
+      if (!isMountedRef.current) return;
 
-    const newMessage: Message = {
-      id: generateMessageId(),
-      text,
-      timestamp: new Date(),
-      type,
-    };
-    setMessages(prev => [...prev, newMessage]);
-  }, []);
+      const newMessage: Message = {
+        id: generateMessageId(),
+        text,
+        timestamp: new Date(),
+        type,
+      };
+      setMessages(prev => [...prev, newMessage]);
+    },
+    [],
+  );
 
   const connectWebSocket = useCallback(() => {
-    if (
-      connectionState.status === 'connecting' ||
-      connectionState.status === 'connected'
-    )
-      return;
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
 
     setConnectionState({ status: 'connecting' });
     console.log('Connecting to WebSocket...');
@@ -109,7 +112,7 @@ export function useChat(): UseChatReturn {
       wasConnectedRef.current = false;
       addMessage('Failed to create WebSocket connection', 'system');
     }
-  }, [connectionState.status, addMessage]);
+  }, [addMessage]);
 
   const disconnectWebSocket = useCallback(() => {
     if (wsRef.current) {
@@ -120,6 +123,10 @@ export function useChat(): UseChatReturn {
   }, []);
 
   const sendMessage = useCallback(() => {
+    if (sendingRef.current) {
+      return;
+    }
+
     if (
       !inputText.trim() ||
       connectionState.status !== 'connected' ||
@@ -128,6 +135,7 @@ export function useChat(): UseChatReturn {
       return;
 
     const messageText = inputText.trim();
+    sendingRef.current = true;
 
     try {
       wsRef.current.send(messageText);
@@ -138,6 +146,8 @@ export function useChat(): UseChatReturn {
       console.error('Failed to send message:', error);
       addMessage('Failed to send message', 'system');
       Alert.alert('Send Error', 'Failed to send message. Please try again.');
+    } finally {
+      sendingRef.current = false;
     }
   }, [inputText, connectionState.status, addMessage]);
 

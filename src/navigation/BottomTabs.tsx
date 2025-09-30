@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Lucide } from '@react-native-vector-icons/lucide';
@@ -21,43 +21,34 @@ export default function BottomTabs() {
     () =>
       isDarkMode
         ? {
-            tabBarActiveTintColor: '#007AFF',
+            tabBarActiveTintColor: '#7434f3',
             tabBarInactiveTintColor: '#9CA3AF',
-            tabBarBackground: '#1f2937',
+            tabBarBackground: '#0C0A10',
             tabBarBorderTop: '#374151',
-            headerBackground: '#1f2937',
+            headerBackground: '#0C0A10',
             headerTintColor: '#ffffff',
           }
         : {
-            tabBarActiveTintColor: '#007AFF',
+            tabBarActiveTintColor: '#7434f3',
             tabBarInactiveTintColor: '#8E8E93',
-            tabBarBackground: '#ffffff',
+            tabBarBackground: '#F4F2F8',
             tabBarBorderTop: '#e5e5e5',
-            headerBackground: '#ffffff',
+            headerBackground: '#F4F2F8',
             headerTintColor: '#000000',
           },
     [isDarkMode],
   );
 
-  const accountIcon = useCallback(
-    ({ color, size }: { color: string; size: number }) => (
-      <Lucide name="circle-user" size={size} color={color} />
-    ),
-    [],
+  const accountIcon = ({ color, size }: { color: string; size: number }) => (
+    <Lucide name="circle-user" size={size} color={color} />
   );
 
-  const settingsIcon = useCallback(
-    ({ color, size }: { color: string; size: number }) => (
-      <Lucide name="settings" size={size} color={color} />
-    ),
-    [],
+  const settingsIcon = ({ color, size }: { color: string; size: number }) => (
+    <Lucide name="settings" size={size} color={color} />
   );
 
-  const chatIcon = useCallback(
-    ({ color, size }: { color: string; size: number }) => (
-      <Lucide name="message-circle" size={size} color={color} />
-    ),
-    [],
+  const chatIcon = ({ color, size }: { color: string; size: number }) => (
+    <Lucide name="message-circle" size={size} color={color} />
   );
 
   const screenOptions = useMemo(
@@ -74,6 +65,8 @@ export default function BottomTabs() {
       },
       headerStyle: {
         backgroundColor: theme.headerBackground,
+        shadowColor: 'transparent',
+        elevation: 0,
       },
       headerTintColor: theme.headerTintColor,
     }),

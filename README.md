@@ -36,7 +36,7 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone and Install
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:GavinConnolly/onchain.git
 cd onchain
 npm install
 ```
@@ -117,6 +117,7 @@ The app includes a WebSocket-based (demo) chat feature:
 ```
 ├── src/
 │   ├── components/          # Shared UI components
+│   │   ├── Button.tsx       # Reusable button with variants
 │   │   ├── ErrorBoundary.tsx
 │   │   ├── KeyboardAvoidView.tsx
 │   │   └── index.ts         # Barrel exports

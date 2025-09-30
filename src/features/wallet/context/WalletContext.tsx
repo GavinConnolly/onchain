@@ -46,6 +46,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   });
 
   const isMountedRef = useRef(true);
+  const tokenDecimalsCache = useRef<number | null>(null);
+  const addressRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    addressRef.current =
+      walletState.status === 'connected' ? walletState.address : null;
+  }, [walletState]);
 
   useEffect(() => {
     return () => {
@@ -123,40 +130,34 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [clearWalletSession]);
 
   const updateBalances = useCallback(async () => {
-    let currentAddress: string | null = null;
-
-    setWalletState(currentState => {
-      if (currentState.status === 'connected') {
-        currentAddress = currentState.address;
-        return {
-          ...currentState,
-          isUpdatingBalances: true,
-        };
-      } else {
-        console.log('Cannot update balances: wallet not connected');
-      }
-      return currentState;
-    });
+    const currentAddress = addressRef.current;
 
     if (!currentAddress) {
-      console.log('No wallet address available - wallet not connected');
+      console.log('Cannot update balances: wallet not connected');
       return;
     }
+
+    console.log('Updating balances for address:', currentAddress);
+
+    // Set loading state
+    setWalletState(prevState => {
+      if (prevState.status === 'connected') {
+        return {
+          ...prevState,
+          isUpdatingBalances: true,
+        };
+      }
+      return prevState;
+    });
 
     try {
       console.log('Updating balances for:', currentAddress);
 
       const client = createPublicClient({
-        transport: http(defaultNetwork.rpcUrl),
+        transport: http(defaultNetwork.rpcUrl, {
+          timeout: 10000, // 10 second timeout
+        }),
       });
-
-      const ethBalance = await client.getBalance({
-        address: currentAddress as `0x${string}`,
-      });
-      if (!isMountedRef.current) return;
-
-      const ethBalanceFormatted = formatEther(ethBalance);
-      console.log('ETH Balance:', ethBalanceFormatted);
 
       const tokenAddress = tokenConfig.address;
 
@@ -177,29 +178,46 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         },
       ] as const;
 
+      let ethBalanceFormatted = '0';
       let tokenBalanceFormatted = '0';
 
       try {
-        console.log('Attempting to get token balance...');
+        console.log('Attempting to get balances in parallel...');
 
-        // Get token balance
-        const tokenBalance = await client.readContract({
+        const ethBalancePromise = client.getBalance({
+          address: currentAddress as `0x${string}`,
+        });
+
+        const tokenBalancePromise = client.readContract({
           address: tokenAddress as `0x${string}`,
           abi: balanceOfAbi,
           functionName: 'balanceOf',
           args: [currentAddress as `0x${string}`],
         });
+
+        const tokenDecimalsPromise = tokenDecimalsCache.current
+          ? Promise.resolve(tokenDecimalsCache.current)
+          : client.readContract({
+              address: tokenAddress as `0x${string}`,
+              abi: balanceOfAbi,
+              functionName: 'decimals',
+            });
+
+        const [ethBalance, tokenBalance, tokenDecimals] = await Promise.all([
+          ethBalancePromise,
+          tokenBalancePromise,
+          tokenDecimalsPromise,
+        ]);
+
         if (!isMountedRef.current) return;
 
-        console.log('Token balance raw:', tokenBalance);
+        if (tokenDecimalsCache.current === null) {
+          tokenDecimalsCache.current = tokenDecimals as number;
+          console.log('Cached token decimals:', tokenDecimals);
+        }
 
-        // Get token decimals
-        const tokenDecimals = await client.readContract({
-          address: tokenAddress as `0x${string}`,
-          abi: balanceOfAbi,
-          functionName: 'decimals',
-        });
-        if (!isMountedRef.current) return;
+        ethBalanceFormatted = formatEther(ethBalance);
+        console.log('ETH Balance:', ethBalanceFormatted);
 
         const { formatUnits } = await import('viem');
         tokenBalanceFormatted = formatUnits(
@@ -208,40 +226,40 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         );
 
         console.log('Token Balance:', tokenBalanceFormatted);
-      } catch (tokenError) {
-        console.error('Failed to get token balance:', tokenError);
-        console.error('Token error details:', {
-          message:
-            tokenError instanceof Error ? tokenError.message : tokenError,
-          stack: tokenError instanceof Error ? tokenError.stack : 'Unknown',
+      } catch (error) {
+        console.error('Failed to get balances:', error);
+        console.error('Balance error details:', {
+          message: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : 'Unknown',
         });
+        ethBalanceFormatted = '0';
         tokenBalanceFormatted = '0';
       }
 
       if (!isMountedRef.current) return;
 
-      setWalletState(currentState => {
-        if (currentState.status === 'connected') {
+      setWalletState(prevState => {
+        if (prevState.status === 'connected') {
           return {
-            ...currentState,
+            ...prevState,
             ethBalance: ethBalanceFormatted,
             tokenBalance: tokenBalanceFormatted,
             isUpdatingBalances: false,
           };
         }
-        return currentState;
+        return prevState;
       });
     } catch (error) {
       console.error('Failed to update balances:', error);
     } finally {
-      setWalletState(currentState => {
-        if (currentState.status === 'connected') {
+      setWalletState(prevState => {
+        if (prevState.status === 'connected') {
           return {
-            ...currentState,
+            ...prevState,
             isUpdatingBalances: false,
           };
         }
-        return currentState;
+        return prevState;
       });
     }
   }, []);

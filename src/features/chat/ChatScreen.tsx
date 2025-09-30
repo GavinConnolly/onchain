@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   FlatList,
   ListRenderItem,
   ActivityIndicator,
@@ -12,7 +11,7 @@ import {
 import clsx from 'clsx';
 import { useFocusEffect } from '@react-navigation/native';
 import { useChat, Message } from './hooks/useChat';
-import { KeyboardAvoidView } from '../../components';
+import { KeyboardAvoidView, Button } from '../../components';
 import { shadows } from '../../styles';
 
 export default function ChatScreen() {
@@ -54,8 +53,7 @@ export default function ChatScreen() {
       return () => {
         disconnectWebSocket();
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []),
+    }, [connectWebSocket, disconnectWebSocket]),
   );
 
   const renderMessage: ListRenderItem<Message | 'connecting'> = useCallback(
@@ -63,7 +61,7 @@ export default function ChatScreen() {
       if (item === 'connecting') {
         return (
           <View className="mb-3 items-center">
-            <View className="bg-white dark:bg-gray-800 px-4 py-3 rounded-full flex-row items-center">
+            <View className="bg-white dark:bg-kraken-dark-med px-4 py-3 rounded-full flex-row items-center">
               <ActivityIndicator size="small" color="#6b7280" />
               <Text className="text-sm text-gray-500 dark:text-gray-400 ml-2">
                 Connecting to chat server...
@@ -78,12 +76,9 @@ export default function ChatScreen() {
       if (message.type === 'system') {
         return (
           <View className="mb-3 items-center">
-            <View className="bg-gray-200 dark:bg-gray-700 px-3 py-2 rounded-full">
+            <View className="bg-gray-200 dark:bg-kraken-dark-med px-6 py-2 rounded-full">
               <Text className="text-sm text-gray-600 dark:text-gray-300 text-center">
                 {message.text}
-              </Text>
-              <Text className="text-xs text-gray-400 dark:text-gray-500 text-center mt-1">
-                {message.timestamp.toLocaleTimeString()}
               </Text>
             </View>
           </View>
@@ -101,8 +96,8 @@ export default function ChatScreen() {
             className={clsx(
               'max-w-[80%] px-3 py-2 rounded-2xl',
               message.type === 'sent'
-                ? 'bg-blue-500 rounded-br-sm'
-                : 'bg-white dark:bg-gray-800 rounded-bl-sm',
+                ? 'bg-white dark:bg-gray-800 rounded-br-sm'
+                : 'bg-kraken-purple rounded-bl-sm',
             )}
             // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
             style={message.type === 'sent' ? undefined : shadows.card}
@@ -111,8 +106,8 @@ export default function ChatScreen() {
               className={clsx(
                 'text-base leading-5',
                 message.type === 'sent'
-                  ? 'text-white'
-                  : 'text-gray-800 dark:text-gray-200',
+                  ? 'text-gray-800 dark:text-gray-200'
+                  : 'text-white',
               )}
             >
               {message.text}
@@ -121,15 +116,15 @@ export default function ChatScreen() {
               className={clsx(
                 'text-xs mt-1',
                 message.type === 'sent'
-                  ? ''
-                  : 'text-gray-400 dark:text-gray-500',
+                  ? 'text-gray-400 dark:text-gray-500'
+                  : '',
               )}
               // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
               /* eslint-disable react-native/no-inline-styles */
               style={
                 message.type === 'sent'
-                  ? { color: 'rgba(255, 255, 255, 0.7)' }
-                  : undefined
+                  ? undefined
+                  : { color: 'rgba(255, 255, 255, 0.7)' }
               }
               /* eslint-enable react-native/no-inline-styles */
             >
@@ -147,7 +142,7 @@ export default function ChatScreen() {
   }, []);
 
   return (
-    <KeyboardAvoidView className="flex-1 bg-gray-100 dark:bg-gray-900">
+    <KeyboardAvoidView className="flex-1 bg-kraken-light dark:bg-kraken-dark">
       <FlatList
         ref={flatListRef}
         data={chatData}
@@ -165,9 +160,9 @@ export default function ChatScreen() {
         inverted={false}
       />
 
-      <View className="flex-row p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 items-end">
+      <View className="flex-row p-4 bg-kraken-light dark:bg-kraken-dark border-t border-white dark:border-kraken-med-dark items-end">
         <TextInput
-          className="flex-1 border border-gray-200 dark:border-gray-600 rounded-3xl px-4 py-2.5 max-h-[100px] text-base text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-700"
+          className="flex-1 border border-white dark:dark:border-kraken-med-dark  rounded-3xl px-4 py-2.5 max-h-[100px] text-base text-gray-800 dark:text-gray-200 bg-white dark:bg-kraken-dark-med"
           value={inputText}
           onChangeText={setInputText}
           placeholder="Type a message..."
@@ -176,27 +171,13 @@ export default function ChatScreen() {
           maxLength={500}
           editable={isConnected}
         />
-        <TouchableOpacity
-          className={clsx(
-            'px-4 py-2.5 rounded-3xl ml-2 items-center justify-center',
-            isConnected && inputText.trim()
-              ? 'bg-green-500'
-              : 'bg-gray-300 dark:bg-gray-600',
-          )}
+        <Button
+          title={!isConnected ? 'Offline' : 'Send'}
+          variant="small"
           onPress={sendMessage}
           disabled={!inputText.trim() || !isConnected}
-        >
-          <Text
-            className={clsx(
-              'text-base font-semibold',
-              isConnected && inputText.trim()
-                ? 'text-white'
-                : 'text-gray-500 dark:text-gray-400',
-            )}
-          >
-            {!isConnected ? 'Offline' : 'Send'}
-          </Text>
-        </TouchableOpacity>
+          className="ml-2"
+        />
       </View>
     </KeyboardAvoidView>
   );

@@ -1,16 +1,10 @@
-import React, { useCallback, useMemo } from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import { ScrollView, View, Text, RefreshControl } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useWallet } from './context/WalletContext';
 import { tokenConfig } from '../../config/wallet.config';
 import { shadows } from '../../styles';
+import { Button } from '../../components';
 
 const BalanceCard = React.memo(
   ({
@@ -23,7 +17,7 @@ const BalanceCard = React.memo(
     subtitle?: string;
   }) => (
     <View
-      className="w-full bg-white dark:bg-gray-800 p-5 rounded-3xl mb-5"
+      className="w-full bg-white dark:bg-kraken-dark-med p-5 rounded-3xl mb-5"
       // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
       style={shadows.card}
     >
@@ -49,17 +43,17 @@ const DisconnectedView = ({
 }: {
   onSettingsPress: () => void;
 }) => (
-  <View className="flex-1 p-5 justify-center items-center bg-gray-100 dark:bg-gray-900">
+  <View className="flex-1 p-5 justify-center items-center bg-kraken-light dark:bg-kraken-dark">
     <Text className="text-base text-gray-600 dark:text-gray-400 text-center mb-8 leading-6">
       Connect your wallet in Settings to view your account
     </Text>
 
-    <TouchableOpacity
-      className="bg-blue-500 px-8 py-4 rounded-2xl min-w-[200px] items-center"
+    <Button
+      title="Settings"
       onPress={onSettingsPress}
-    >
-      <Text className="text-white text-base font-semibold">Settings</Text>
-    </TouchableOpacity>
+      variant="primary"
+      className="min-w-[200px]"
+    />
   </View>
 );
 
@@ -85,15 +79,6 @@ export default function AccountScreen() {
     [isConnected, ethBalance, tokenBalance],
   );
 
-  // Update balances when screen is focused and wallet is connected, but only if balances are missing
-  useFocusEffect(
-    useCallback(() => {
-      if (isConnected && (!ethBalance || !tokenBalance)) {
-        updateBalances();
-      }
-    }, [isConnected, ethBalance, tokenBalance, updateBalances]),
-  );
-
   if (walletState.status !== 'connected') {
     return (
       <DisconnectedView
@@ -104,7 +89,7 @@ export default function AccountScreen() {
 
   return (
     <ScrollView
-      className="flex-1 p-5 bg-gray-100 dark:bg-gray-900"
+      className="flex-1 p-5 bg-kraken-light dark:bg-kraken-dark"
       refreshControl={
         <RefreshControl refreshing={false} onRefresh={updateBalances} />
       }
@@ -124,34 +109,12 @@ export default function AccountScreen() {
           subtitle={tokenConfig.address}
         />
 
-        <TouchableOpacity
-          className="bg-blue-500 px-8 py-4 rounded-2xl items-center relative"
+        <Button
+          title="Refresh Balances"
           onPress={updateBalances}
-          disabled={walletState.isUpdatingBalances}
-          // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
-          /* eslint-disable react-native/no-inline-styles */
-          style={{
-            opacity: walletState.isUpdatingBalances ? 0.6 : 1,
-          }}
-          /* eslint-enable react-native/no-inline-styles */
-        >
-          <Text
-            className="text-white text-base font-semibold"
-            // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
-            /* eslint-disable react-native/no-inline-styles */
-            style={{
-              opacity: walletState.isUpdatingBalances ? 0 : 1,
-            }}
-            /* eslint-enable react-native/no-inline-styles */
-          >
-            Refresh Balances
-          </Text>
-          {walletState.isUpdatingBalances && (
-            <View className="absolute inset-0 justify-center items-center">
-              <ActivityIndicator size="small" color="white" />
-            </View>
-          )}
-        </TouchableOpacity>
+          loading={walletState.isUpdatingBalances}
+          variant="primary"
+        />
       </View>
     </ScrollView>
   );

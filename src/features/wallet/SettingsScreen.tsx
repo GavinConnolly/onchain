@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   Clipboard,
   Alert,
 } from 'react-native';
@@ -11,6 +10,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { Lucide } from '@react-native-vector-icons/lucide';
 import { useWallet } from './context/WalletContext';
 import { shadows } from '../../styles';
+import { Button } from '../../components';
 
 export default function SettingsScreen() {
   const { walletState, connectWallet, disconnectWallet, openWalletLink } =
@@ -31,14 +31,14 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 p-5 justify-center items-center bg-gray-100 dark:bg-gray-900">
+    <View className="flex-1 p-5 justify-center items-center bg-kraken-light dark:bg-kraken-dark">
       <Text className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-200">
         Settings
       </Text>
 
       {walletState.status === 'connected' ? (
         <View
-          className="items-center p-5 bg-white dark:bg-gray-800 rounded-3xl"
+          className="items-center p-5 bg-white dark:bg-kraken-dark-med rounded-3xl"
           // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
           style={shadows.card}
         >
@@ -49,20 +49,18 @@ export default function SettingsScreen() {
             {walletState.address.slice(0, 6)}...{walletState.address.slice(-4)}
           </Text>
 
-          <TouchableOpacity
-            className="bg-red-500 px-8 py-4 rounded-2xl min-w-[200px] items-center"
+          <Button
+            title="Disconnect Wallet"
             onPress={disconnectWallet}
-          >
-            <Text className="text-white text-base font-semibold">
-              Disconnect Wallet
-            </Text>
-          </TouchableOpacity>
+            variant="danger"
+            className="min-w-[200px]"
+          />
         </View>
       ) : (
         <View className="items-center p-5">
           {walletState.status === 'connecting' && walletState.connectionUri ? (
             <View
-              className="items-center p-5 bg-white dark:bg-gray-800 rounded-3xl"
+              className="items-center p-5 bg-white dark:bg-kraken-dark-med rounded-3xl"
               // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
               style={shadows.card}
             >
@@ -104,34 +102,13 @@ export default function SettingsScreen() {
                 Connect your wallet to view balances and interact with Ink Chain
               </Text>
 
-              <TouchableOpacity
-                className="bg-blue-500 px-8 py-4 rounded-2xl min-w-[200px] items-center relative"
+              <Button
+                title="Connect Wallet"
                 onPress={connectWallet}
-                disabled={walletState.status === 'connecting'}
-                // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
-                /* eslint-disable react-native/no-inline-styles */
-                style={{
-                  opacity: walletState.status === 'connecting' ? 0.6 : 1,
-                }}
-                /* eslint-enable react-native/no-inline-styles */
-              >
-                <Text
-                  className="text-white text-base font-semibold"
-                  // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
-                  /* eslint-disable react-native/no-inline-styles */
-                  style={{
-                    opacity: walletState.status === 'connecting' ? 0 : 1,
-                  }}
-                  /* eslint-enable react-native/no-inline-styles */
-                >
-                  Connect Wallet
-                </Text>
-                {walletState.status === 'connecting' && (
-                  <View className="absolute inset-0 justify-center items-center">
-                    <ActivityIndicator size="small" color="white" />
-                  </View>
-                )}
-              </TouchableOpacity>
+                loading={walletState.status === 'connecting'}
+                variant="primary"
+                className="min-w-[200px]"
+              />
             </>
           )}
         </View>

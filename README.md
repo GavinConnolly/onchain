@@ -2,6 +2,8 @@
 
 A React Native application demonstrating wallet integration with Ink Chain testnet, featuring WalletConnect integration, balance querying, and (demo) real-time chat functionality.
 
+<img src="https://github.com/GavinConnolly/onchain/blob/main/screenshots/account.png?raw=true" alt="Account" width="100"/>
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:

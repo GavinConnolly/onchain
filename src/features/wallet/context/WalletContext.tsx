@@ -16,7 +16,7 @@ import {
   linkingService,
 } from '../services';
 
-// NOTE : Separating context data and actions may be desirable at some point, but at this point it would be premature optimisation
+// NOTE : Separating context data and actions would be premature optimisation at this point
 
 type WalletConnectionState =
   | { status: 'disconnected' }
@@ -48,6 +48,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const isMountedRef = useRef(true);
   const tokenDecimalsCache = useRef<number | null>(null);
   const addressRef = useRef<string | null>(null);
+  const hasTriggeredBalanceUpdate = useRef(false);
 
   useEffect(() => {
     addressRef.current =
@@ -272,21 +273,32 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         if (!isMountedRef.current) return;
         console.log('WalletConnect initialized');
 
-        const restored = await restoreWalletSession();
-        if (restored) {
-          setTimeout(() => {
-            if (isMountedRef.current) {
-              updateBalances();
-            }
-          }, 1000);
-        }
+        await restoreWalletSession();
       } catch (error) {
         console.error('Failed to initialize WalletConnect:', error);
       }
     };
 
     initializeAndRestore();
-  }, [restoreWalletSession, updateBalances]);
+  }, [restoreWalletSession]);
+
+  // Automatically update balances when wallet becomes connected
+  useEffect(() => {
+    if (
+      walletState.status === 'connected' &&
+      !hasTriggeredBalanceUpdate.current
+    ) {
+      hasTriggeredBalanceUpdate.current = true;
+
+      if (isMountedRef.current) {
+        updateBalances();
+      }
+    }
+
+    if (walletState.status === 'disconnected') {
+      hasTriggeredBalanceUpdate.current = false;
+    }
+  }, [walletState.status, updateBalances]);
 
   const connectWallet = useCallback(async () => {
     try {
@@ -331,18 +343,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         console.log('Wallet connected:', address);
 
         await saveWalletSession(session.topic, address);
-
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            updateBalances();
-          }
-        }, 1000);
       }
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       setWalletState({ status: 'disconnected' });
     }
-  }, [saveWalletSession, updateBalances]);
+  }, [saveWalletSession]);
 
   const disconnectWallet = useCallback(async () => {
     try {

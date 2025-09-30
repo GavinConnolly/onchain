@@ -1,3 +1,3 @@
 export const chatConfig = {
-  serverUrl: 'wss://ws.postman-echo.com/raw',
+  serverUrl: 'wss://echo.websocket.org',
 };

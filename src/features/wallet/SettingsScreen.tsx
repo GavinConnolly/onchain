@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { Lucide } from '@react-native-vector-icons/lucide';
 import { useWallet } from './context/WalletContext';
 import { shadows } from '../../styles';
-import { Button } from '../../components';
+import { BackgroundOrb, Button } from '../../components';
 
 export default function SettingsScreen() {
   const { walletState, connectWallet, disconnectWallet, openWalletLink } =
@@ -25,7 +25,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View className="flex-1 p-5 justify-center items-center bg-kraken-light dark:bg-kraken-dark">
+    <View className="flex-1 p-5 pb-10 justify-center items-center bg-kraken-light dark:bg-kraken-dark border-b-2 border-white dark:border-kraken-dark-med">
+      <BackgroundOrb />
       {walletState.status === 'connected' ? (
         <View
           className="items-center p-6 bg-white dark:bg-kraken-dark-med rounded-3xl"
@@ -55,7 +56,7 @@ export default function SettingsScreen() {
               style={shadows.card}
             >
               <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
-                Scan with your wallet
+                Connect your wallet
               </Text>
               <QRCode
                 value={walletState.connectionUri}

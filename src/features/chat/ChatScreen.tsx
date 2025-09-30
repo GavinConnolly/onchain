@@ -10,7 +10,7 @@ import {
 
 import clsx from 'clsx';
 import { useChat, Message } from './hooks/useChat';
-import { KeyboardAvoidView, Button } from '../../components';
+import { KeyboardAvoidView, Button, BackgroundOrb } from '../../components';
 import { shadows } from '../../styles';
 
 export default function ChatScreen() {
@@ -129,6 +129,7 @@ export default function ChatScreen() {
 
   return (
     <KeyboardAvoidView className="flex-1 bg-kraken-light dark:bg-kraken-dark">
+      <BackgroundOrb />
       <FlatList
         ref={flatListRef}
         data={chatData}

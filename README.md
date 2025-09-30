@@ -12,6 +12,8 @@ Before you begin, ensure you have the following installed:
 - **Xcode**: `>= 16.1` (Required for iOS development)
 - **Android Studio**: `>= 2025.1` (Required for Android development)
 
+Refer to [React Native documentation](https://reactnative.dev/docs/set-up-your-environment).
+
 ## Technology Stack
 
 - **React Native**: `0.81.4`
@@ -25,11 +27,12 @@ Before you begin, ensure you have the following installed:
 ## Features
 
 - **Wallet Integration**: Connect with any WalletConnect-compatible wallet
-- **Balance Queries**: View ETH and ERC-20 token balances on Ink Sepolia
+- **Balance Queries**: View ETH and ERC-20 token balances on Ink Sepolia with pull-to-refresh
 - **QR Code Connection**: Scan to connect with mobile wallets
 - **Session Persistence**: Secure wallet session storage using device Keychain/Keystore
 - **Auto-Reconnect**: Seamlessly restore wallet connections across app sessions
 - **Real-time Chat**: WebSocket-based messaging demo
+- **Light & Dark Mode**: Full theme support that responds to system preferences
 
 ## Setup
 

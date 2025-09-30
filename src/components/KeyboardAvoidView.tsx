@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { View, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// TODO : This is a quick and dirty keyboard avoid view, more development would be needed before production (or selection of a third party library, possibly: react-native-keyboard-controller )
+// TODO : This is a quick and dirty keyboard avoid view, more development would be needed before production (or selection of a third party library, possibly: react-native-keyboard-controller ). Currently has some unpredictable behaviour on Android.
 
 interface KeyboardAvoidViewProps {
   children: ReactNode;

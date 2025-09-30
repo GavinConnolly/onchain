@@ -17,7 +17,7 @@ const BalanceCard = React.memo(
     subtitle?: string;
   }) => (
     <View
-      className="w-full bg-white dark:bg-kraken-dark-med p-5 rounded-3xl mb-5"
+      className="w-full bg-white dark:bg-kraken-dark-med p-6 rounded-3xl mb-5"
       // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
       style={shadows.card}
     >
@@ -95,10 +95,6 @@ export default function AccountScreen() {
       }
     >
       <View className="flex-1 justify-center items-center">
-        <Text className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-200">
-          Account
-        </Text>
-
         <BalanceCard title="Wallet Address" value={walletState.address} />
 
         <BalanceCard title="ETH Balance" value={formattedBalances.eth} />

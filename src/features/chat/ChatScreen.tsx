@@ -9,21 +9,13 @@ import {
 } from 'react-native';
 
 import clsx from 'clsx';
-import { useFocusEffect } from '@react-navigation/native';
 import { useChat, Message } from './hooks/useChat';
 import { KeyboardAvoidView, Button } from '../../components';
 import { shadows } from '../../styles';
 
 export default function ChatScreen() {
-  const {
-    messages,
-    connectionState,
-    inputText,
-    setInputText,
-    connectWebSocket,
-    disconnectWebSocket,
-    sendMessage,
-  } = useChat();
+  const { messages, connectionState, inputText, setInputText, sendMessage } =
+    useChat();
 
   const isConnected = connectionState.status === 'connected';
   const isConnecting = connectionState.status === 'connecting';
@@ -47,23 +39,17 @@ export default function ChatScreen() {
     }
   }, [chatData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      connectWebSocket();
-      return () => {
-        disconnectWebSocket();
-      };
-    }, [connectWebSocket, disconnectWebSocket]),
-  );
-
   const renderMessage: ListRenderItem<Message | 'connecting'> = useCallback(
     ({ item }) => {
       if (item === 'connecting') {
         return (
-          <View className="mb-3 items-center">
-            <View className="bg-white dark:bg-kraken-dark-med px-4 py-3 rounded-full flex-row items-center">
-              <ActivityIndicator size="small" color="#6b7280" />
-              <Text className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+          <View className="mb-3 mt-3 items-center">
+            <View className="flex-colum items-center">
+              <ActivityIndicator
+                size="small"
+                className="text-gray-500 dark:text-gray-400"
+              />
+              <Text className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Connecting to chat server...
               </Text>
             </View>
@@ -76,8 +62,8 @@ export default function ChatScreen() {
       if (message.type === 'system') {
         return (
           <View className="mb-3 items-center">
-            <View className="bg-gray-200 dark:bg-kraken-dark-med px-6 py-2 rounded-full">
-              <Text className="text-sm text-gray-600 dark:text-gray-300 text-center">
+            <View className="bg-kraken-med dark:bg-kraken-dark-med px-6 py-2 rounded-full">
+              <Text className="text-sm text-gray-800 dark:text-gray-300 text-center">
                 {message.text}
               </Text>
             </View>
@@ -96,7 +82,7 @@ export default function ChatScreen() {
             className={clsx(
               'max-w-[80%] px-3 py-2 rounded-2xl',
               message.type === 'sent'
-                ? 'bg-white dark:bg-gray-800 rounded-br-sm'
+                ? 'bg-white dark:bg-kraken-med-dark rounded-br-sm'
                 : 'bg-kraken-purple rounded-bl-sm',
             )}
             // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
@@ -173,7 +159,7 @@ export default function ChatScreen() {
         />
         <Button
           title={!isConnected ? 'Offline' : 'Send'}
-          variant="small"
+          variant="round"
           onPress={sendMessage}
           disabled={!inputText.trim() || !isConnected}
           className="ml-2"

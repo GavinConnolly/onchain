@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Clipboard,
-  Alert,
-} from 'react-native';
+import { View, Text, Clipboard, Alert } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { Lucide } from '@react-native-vector-icons/lucide';
 import { useWallet } from './context/WalletContext';
@@ -32,13 +26,9 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 p-5 justify-center items-center bg-kraken-light dark:bg-kraken-dark">
-      <Text className="text-2xl font-bold mb-8 text-gray-800 dark:text-gray-200">
-        Settings
-      </Text>
-
       {walletState.status === 'connected' ? (
         <View
-          className="items-center p-5 bg-white dark:bg-kraken-dark-med rounded-3xl"
+          className="items-center p-6 bg-white dark:bg-kraken-dark-med rounded-3xl"
           // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
           style={shadows.card}
         >
@@ -60,11 +50,11 @@ export default function SettingsScreen() {
         <View className="items-center p-5">
           {walletState.status === 'connecting' && walletState.connectionUri ? (
             <View
-              className="items-center p-5 bg-white dark:bg-kraken-dark-med rounded-3xl"
+              className="items-center p-6 bg-white dark:bg-kraken-dark-med rounded-3xl"
               // Inline style used as a temporary workaround to known Nativewind issues, eg #1557
               style={shadows.card}
             >
-              <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-5">
+              <Text className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
                 Scan with your wallet
               </Text>
               <QRCode
@@ -73,27 +63,26 @@ export default function SettingsScreen() {
                 backgroundColor="white"
                 color="black"
               />
-              <Text className="text-sm text-gray-600 dark:text-gray-400 text-center mt-5 leading-5">
+              <Text className="text-sm text-gray-600 dark:text-gray-400 text-center mt-6 leading-5">
                 Open your wallet and scan this QR code to connect, or use these
                 options:
               </Text>
 
-              <View className="flex-row mt-4">
-                <TouchableOpacity
-                  className="bg-gray-500 dark:bg-gray-600 px-6 py-3 rounded-2xl flex-1 mr-3"
+              <View className="flex-row mt-6">
+                <Button
+                  title="Open Link"
                   onPress={openWalletLink}
-                >
-                  <Text className="text-white text-sm font-semibold text-center">
-                    Open Link
-                  </Text>
-                </TouchableOpacity>
+                  variant="small"
+                  className="flex-1 mr-3 !justify-start"
+                />
 
-                <TouchableOpacity
-                  className="bg-blue-500 px-3 py-3 rounded-2xl items-center justify-center"
+                <Button
+                  title=""
                   onPress={copyConnectionUri}
-                >
-                  <Lucide name="copy" size={18} color="white" />
-                </TouchableOpacity>
+                  variant="secondary"
+                  icon={<Lucide name="copy" size={16} color="#7434f3" />}
+                  iconPosition="only"
+                />
               </View>
             </View>
           ) : (

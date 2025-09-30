@@ -27,6 +27,7 @@ export default function BottomTabs() {
             tabBarBorderTop: '#374151',
             headerBackground: '#0C0A10',
             headerTintColor: '#ffffff',
+            headerBorderBottom: '#251F42', // kraken-med-dark
           }
         : {
             tabBarActiveTintColor: '#7434f3',
@@ -35,6 +36,7 @@ export default function BottomTabs() {
             tabBarBorderTop: '#e5e5e5',
             headerBackground: '#F4F2F8',
             headerTintColor: '#000000',
+            headerBorderBottom: '#ffffff', // white
           },
     [isDarkMode],
   );
@@ -59,6 +61,7 @@ export default function BottomTabs() {
       tabBarStyle: {
         backgroundColor: theme.tabBarBackground,
         borderTopColor: theme.tabBarBorderTop,
+        borderTopWidth: 0,
         paddingTop: 8,
         paddingBottom: 8,
         height: 84,
@@ -67,6 +70,8 @@ export default function BottomTabs() {
         backgroundColor: theme.headerBackground,
         shadowColor: 'transparent',
         elevation: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.headerBorderBottom,
       },
       headerTintColor: theme.headerTintColor,
     }),

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import { chatConfig } from '../../../config/chat.config';
 
 let messageIdCounter = 0;
@@ -8,7 +8,7 @@ const generateMessageId = () => {
   return `msg_${Date.now()}_${messageIdCounter}`;
 };
 
-// TODO : Offline first persistence, global message handling etc. While the chat is in demo mode, it can only receive messages a moment after a message is sent (as an echo).
+// TODO : Offline first persistence, global message handling etc (while in demo mode, messages are only echoed
 
 export interface Message {
   id: string;
@@ -152,13 +152,26 @@ export function useChat(): UseChatReturn {
   }, [inputText, connectionState.status, addMessage]);
 
   useEffect(() => {
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        connectWebSocket();
+      } else if (nextAppState === 'background' || nextAppState === 'inactive') {
+        disconnectWebSocket();
       }
     };
-  }, []);
+
+    connectWebSocket();
+
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
+
+    return () => {
+      subscription?.remove();
+      disconnectWebSocket();
+    };
+  }, [connectWebSocket, disconnectWebSocket]);
 
   return {
     messages,

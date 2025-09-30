@@ -11,11 +11,13 @@ import clsx from 'clsx';
 export interface ButtonProps
   extends Omit<PressableProps, 'disabled' | 'style'> {
   title: string;
-  variant?: 'primary' | 'secondary' | 'danger' | 'small';
+  variant?: 'primary' | 'secondary' | 'danger' | 'round' | 'small';
   loading?: boolean;
   disabled?: boolean;
   onPress?: () => void;
   style?: PressableProps['style'];
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right' | 'only';
 }
 
 export default function Button({
@@ -26,28 +28,39 @@ export default function Button({
   onPress,
   className,
   style,
+  icon,
+  iconPosition = 'left',
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading;
 
   const buttonClasses = clsx(
-    'items-center relative',
+    'items-center justify-center relative',
     {
-      'px-8 py-4 rounded-2xl': variant !== 'small',
-      'px-4 py-2.5 rounded-3xl': variant === 'small',
-      'bg-kraken-purple': variant === 'primary' && !disabled,
+      'flex-row': iconPosition === 'left' || iconPosition === 'right',
+      'bg-kraken-purple':
+        (variant === 'primary' || variant === 'small') && !disabled,
       'bg-transparent border-2 border-kraken-purple':
         variant === 'secondary' && !disabled,
       'bg-red-500': variant === 'danger' && !disabled,
-      'bg-green-500': variant === 'small' && !disabled,
+      'bg-green-500': variant === 'round' && !disabled,
       'bg-gray-300 dark:bg-gray-600': disabled,
+      'px-8 py-4 rounded-2xl':
+        variant !== 'round' && variant !== 'small' && variant !== 'secondary' && iconPosition !== 'only',
+      'px-4 py-2.5 rounded-3xl': variant === 'round' && iconPosition !== 'only',
+      'px-8 py-2.5 rounded-2xl': (variant === 'small' || variant === 'secondary') && iconPosition !== 'only',
+      'px-4 py-4 rounded-2xl': iconPosition === 'only' && variant !== 'small' && variant !== 'secondary',
+      'px-4 py-2.5 rounded-2xl': iconPosition === 'only' && (variant === 'small' || variant === 'secondary'),
     },
     className,
   );
 
-  const textClasses = clsx('text-base font-semibold', {
+  const textClasses = clsx('text-base font-semibold text-center', {
     'text-white':
-      (variant === 'primary' || variant === 'danger' || variant === 'small') &&
+      (variant === 'primary' ||
+        variant === 'danger' ||
+        variant === 'round' ||
+        variant === 'small') &&
       !disabled,
     'text-kraken-purple': variant === 'secondary' && !disabled,
     'text-gray-500 dark:text-gray-400': disabled,
@@ -56,6 +69,7 @@ export default function Button({
   const activityIndicatorColor =
     variant === 'primary' ||
     variant === 'danger' ||
+    variant === 'round' ||
     variant === 'small' ||
     disabled
       ? 'white'
@@ -76,16 +90,49 @@ export default function Button({
       /* eslint-enable react-native/no-inline-styles */
       {...props}
     >
-      <Text
-        className={textClasses}
-        /* eslint-disable react-native/no-inline-styles */
-        style={{
-          opacity: loading ? 0 : 1,
-        }}
-        /* eslint-enable react-native/no-inline-styles */
-      >
-        {title}
-      </Text>
+      {iconPosition === 'left' && icon && (
+        <View
+          /* eslint-disable react-native/no-inline-styles */
+          style={{ opacity: loading ? 0 : 1, marginRight: 8 }}
+          /* eslint-enable react-native/no-inline-styles */
+        >
+          {icon}
+        </View>
+      )}
+
+      {iconPosition !== 'only' && (
+        <Text
+          className={textClasses}
+          /* eslint-disable react-native/no-inline-styles */
+          style={{
+            opacity: loading ? 0 : 1,
+          }}
+          /* eslint-enable react-native/no-inline-styles */
+        >
+          {title}
+        </Text>
+      )}
+
+      {iconPosition === 'right' && icon && (
+        <View
+          /* eslint-disable react-native/no-inline-styles */
+          style={{ opacity: loading ? 0 : 1, marginLeft: 8 }}
+          /* eslint-enable react-native/no-inline-styles */
+        >
+          {icon}
+        </View>
+      )}
+
+      {iconPosition === 'only' && icon && (
+        <View
+          /* eslint-disable react-native/no-inline-styles */
+          style={{ opacity: loading ? 0 : 1 }}
+          /* eslint-enable react-native/no-inline-styles */
+        >
+          {icon}
+        </View>
+      )}
+
       {loading && (
         <View className="absolute inset-0 justify-center items-center">
           <ActivityIndicator size="small" color={activityIndicatorColor} />
